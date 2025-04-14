@@ -8,14 +8,22 @@
 import SwiftUI
 
 protocol ImageCacheable {
-	func loadImage(from urlString: String, cacheKey: String) async
+	func loadImage(from urlString: String?, cacheKey: String) async
 }
 
 @MainActor
 class ImageLoader: ObservableObject, ImageCacheable {
 	@Published var image: UIImage?
+	@Published var fail: Bool = false
 
-	func loadImage(from urlString: String, cacheKey: String) async {
+	func loadImage(from urlString: String?, cacheKey: String) async {
+		self.fail = false
+		
+		guard let urlString else {
+			self.fail = true
+			return
+		}
+		
 		if let memoryCachedImage = ImageCacheManager.shared.imageFromMemoryCache(for: cacheKey) {
 			self.image = memoryCachedImage
 			return
@@ -27,7 +35,10 @@ class ImageLoader: ObservableObject, ImageCacheable {
 			return
 		}
 		
-		guard let url = URL(string: urlString) else { return }
+		guard let url = URL(string: urlString) else {
+			self.fail = true
+			return
+		}
 
 		do {
 			let (data, _) = try await URLSession.shared.data(from: url)
@@ -35,9 +46,12 @@ class ImageLoader: ObservableObject, ImageCacheable {
 				ImageCacheManager.shared.saveImageToMemoryCache(uiImage, for: cacheKey)
 				ImageCacheManager.shared.saveImageToDiskCache(uiImage, for: cacheKey)
 				self.image = uiImage
+			} else {
+				self.fail = true
 			}
 		} catch {
-			print("Image load error: \(error)")
+			self.fail = true
+			print(error)
 		}
 	}
 }

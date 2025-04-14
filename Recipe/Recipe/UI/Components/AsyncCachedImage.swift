@@ -19,13 +19,17 @@ struct AsyncCachedImage: View {
 				Image(uiImage: image)
 					.resizable()
 					.scaledToFill()
+			} else if imageLoader.fail {
+				Image(systemName: "photo")
+					.resizable()
+					.scaledToFit()
+					.foregroundColor(.gray)
 			} else {
 				ProgressView()
 			}
 		}
 		.onAppear {
 			Task {
-				guard let urlString else { return }
 				await imageLoader.loadImage(from: urlString, cacheKey: id)
 			}
 		}
