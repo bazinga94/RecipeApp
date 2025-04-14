@@ -1,5 +1,5 @@
 //
-//  RecipeList.swift
+//  RecipeListView.swift
 //  Recipe
 //
 //  Created by Jongho Lee on 4/13/25.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct RecipeList: View {
+struct RecipeListView: View {
 	enum SortOption: String, CaseIterable {
 		case name = "Name"
 		case cuisine = "Cuisine"
@@ -33,26 +33,27 @@ struct RecipeList: View {
 	
     var body: some View {
 		NavigationView {
-			List {
-				Section {
-					Picker("Sort by", selection: $sortOption) {
-						ForEach(SortOption.allCases, id: \.self) { option in
-							Text(option.rawValue)
-						}
+			VStack {
+				Picker("Sort by", selection: $sortOption) {
+					ForEach(SortOption.allCases, id: \.self) { option in
+						Text(option.rawValue)
 					}
-					.pickerStyle(.segmented)
-					.padding(.vertical, 5)
-					.padding(.horizontal, 40)
 				}
+				.pickerStyle(.segmented)
+				.padding(.vertical, 5)
+				.padding(.horizontal, 40)
 				
-				Section {
-					ForEach(sortedAndFilteredRecipes) { recipe in
-//						RecipeRow(recipe: recipe)
-						NavigationLink(destination: RecipeDetailView(recipe: recipe)) {
-							RecipeRow(recipe: recipe)
+				List {
+					Section {
+						ForEach(sortedAndFilteredRecipes) { recipe in
+							//						RecipeRow(recipe: recipe)
+							NavigationLink(destination: RecipeDetailView(recipe: recipe)) {
+								RecipeRow(recipe: recipe)
+							}
 						}
 					}
 				}
+//				.searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always))
 			}
 			.navigationTitle("Recipes")
 			.navigationBarTitleDisplayMode(.inline)
@@ -83,28 +84,6 @@ struct RecipeList: View {
     }
 }
 
-struct RecipeDetailView: View {
-	var recipe: Recipe
-	
-	var body: some View {
-		VStack {
-			Text(recipe.name)
-				.font(.largeTitle)
-				.padding()
-			
-			Text(recipe.cuisine)
-				.font(.title2)
-				.padding()
-			
-			Text(recipe.photoUrlLarge ?? "")
-				.padding()
-			
-			Spacer()
-		}
-		.navigationTitle("Recipe Details")
-	}
-}
-
 #Preview {
-	RecipeList(recipes: [.init(uuid: "", name: "TEST", cuisine: "Korean", photoUrlLarge: nil, photoUrlSmall: nil, sourceUrl: nil, youtubeUrl: nil)])
+	RecipeListView(recipes: [.init(uuid: "", name: "TEST", cuisine: "Korean", photoUrlLarge: nil, photoUrlSmall: nil, sourceUrl: nil, youtubeUrl: nil)])
 }

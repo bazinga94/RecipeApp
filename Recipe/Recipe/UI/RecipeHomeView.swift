@@ -12,36 +12,34 @@ struct RecipeHomeView: View {
 	@ObservedObject var viewModel: RecipesListViewModel
 	
 	var body: some View {
-		NavigationView {
-			Group {
-				switch viewModel.state {
-				case .idle, .loading:
-					ProgressView()
-				case .loaded(let recipes):
-					if recipes.isEmpty {
-						RecipeEmptyView {
-							Task {
-								await viewModel.fetchRecipes()
-							}
-						}
-					} else {
-						RecipeList(recipes: recipes)
-							.refreshable {
-								await viewModel.fetchRecipes(isRefresh: true)
-							}
-					}
-				case .failed(let errorMessage):
-					RecipeLoadErrorView(errorMessage: errorMessage) {
+		Group {
+			switch viewModel.state {
+			case .idle, .loading:
+				ProgressView()
+			case .loaded(let recipes):
+				if recipes.isEmpty {
+					RecipeEmptyView {
 						Task {
 							await viewModel.fetchRecipes()
 						}
 					}
+				} else {
+					RecipeListView(recipes: recipes)
+						.refreshable {
+							await viewModel.fetchRecipes(isRefresh: true)
+						}
+				}
+			case .failed(let errorMessage):
+				RecipeLoadErrorView(errorMessage: errorMessage) {
+					Task {
+						await viewModel.fetchRecipes()
+					}
 				}
 			}
-			.task {
-				if case .idle = viewModel.state {
-					await viewModel.fetchRecipes()
-				}
+		}
+		.task {
+			if case .idle = viewModel.state {
+				await viewModel.fetchRecipes()
 			}
 		}
 	}

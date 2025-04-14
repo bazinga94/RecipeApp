@@ -12,7 +12,7 @@ struct RecipeRow: View {
 	
 	var body: some View {
 		HStack(alignment: .top) {
-			AsyncCachedImage(urlString: recipe.photoUrlSmall, id: recipe.uuid)
+			AsyncCachedImage(urlString: recipe.photoUrlSmall, id: recipe.uuid + "_small")
 				.frame(width: 80, height: 80)
 				.cornerRadius(20)
 			
