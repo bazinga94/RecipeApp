@@ -18,7 +18,6 @@ struct RecipeListView: View {
 	@State var searchText: String = ""
 	
 	private var sortedAndFilteredRecipes: [Recipe] {
-		
 		let filteredRecipes = recipes.filter { recipe in
 			return searchText.isEmpty || recipe.name.localizedCaseInsensitiveContains(searchText) || recipe.cuisine.localizedCaseInsensitiveContains(searchText)
 		}
@@ -53,34 +52,11 @@ struct RecipeListView: View {
 						}
 					}
 				}
-//				.searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always))
 			}
 			.navigationTitle("Recipes")
 			.navigationBarTitleDisplayMode(.inline)
 			.searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always))
 		}
-			
-//		.toolbar {
-//			ToolbarItem {
-//				TextField("Search recipe", text: $searchText)
-//					.textFieldStyle(.roundedBorder)
-//			}
-//		}
-		
-//		VStack {
-//			Picker("Sort by", selection: $sortOption) {
-//				ForEach(SortOption.allCases, id: \.self) { option in
-//					Text(option.rawValue)
-//				}
-//			}
-//			.pickerStyle(.segmented)
-//			.padding(.all)
-//			
-//			List(sortedRecipes, id: \.uuid) { recipe in
-//				RecipeRow(recipe: recipe)
-//			}
-//		}
-//		.navigationTitle("Recipes")
     }
 }
 

@@ -8,10 +8,7 @@
 import Foundation
 
 class RecipesListViewModel: ObservableObject {
-	
-//	@Published private(set) var recipes: [Recipe] = []
-//	@Published var isLoading: Bool = false
-//	@Published var errorMessage: String?
+
 	@Published private(set) var state = State.idle
 	
 	private var apiClient: APIClientProtocol
