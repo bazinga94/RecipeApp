@@ -24,7 +24,6 @@ class APIClient: APIClientProtocol {
 		let (data, urlResponse) = try await URLSession.shared.data(from: url)
 		
 		guard let httpUrlResponse = urlResponse as? HTTPURLResponse, httpUrlResponse.statusCode == 200 else {
-//			print(urlResponse)
 			throw APIError.invalidResponse
 		}
 		

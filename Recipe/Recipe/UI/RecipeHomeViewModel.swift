@@ -9,25 +9,30 @@ import Foundation
 
 class RecipesListViewModel: ObservableObject {
 	
-	@Published var recipes: [Recipe] = []
-	@Published var isLoading: Bool = false
-	@Published var errorMessage: String?
+//	@Published private(set) var recipes: [Recipe] = []
+//	@Published var isLoading: Bool = false
+//	@Published var errorMessage: String?
+	@Published private(set) var state = State.idle
 	
 	private var apiClient: APIClientProtocol
+	
+	enum State {
+		case idle
+		case loading
+		case failed(String)
+		case loaded([Recipe])
+	}
 	
 	init(apiClient: APIClientProtocol) {
 		self.apiClient = apiClient
 	}
 	
 	@MainActor
-	func fetchRecipes() async {
-		guard !isLoading else { return }
+	func fetchRecipes(isRefresh: Bool = false) async {
+		if case .loading = state { return }
 		
-		isLoading = true
-		errorMessage = nil
-		
-		defer {
-			isLoading = false
+		if !isRefresh {
+			state = .loading
 		}
 		
 		// All Recipes: https://d3jbb8n5wk0qxi.cloudfront.net/recipes.json
@@ -36,10 +41,10 @@ class RecipesListViewModel: ObservableObject {
 		
 		do {
 			let recipesResponse = try await self.apiClient.fetch(for: RecipesResponseDTO.self, from: "https://d3jbb8n5wk0qxi.cloudfront.net/recipes.json")
-			self.recipes = RecipeMapper.mapList(recipesResponse.recipes)
+			self.state = .loaded(RecipeMapper.mapList(recipesResponse.recipes))
 		} catch {
 			print(error)
-			self.errorMessage = "Something went wrong. Please try again later."
+			self.state = .failed("Something went wrong. \nPlease try again later.")
 		}
 	}
 }

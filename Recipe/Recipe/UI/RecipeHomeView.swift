@@ -14,27 +14,33 @@ struct RecipeHomeView: View {
 	var body: some View {
 		NavigationView {
 			Group {
-				if let errorMessage = viewModel.errorMessage {
-					VStack(spacing: 15) {
-						Text(errorMessage)
-							.foregroundColor(.red)
-						Button("Retry") {
+				switch viewModel.state {
+				case .idle, .loading:
+					ProgressView()
+				case .loaded(let recipes):
+					if recipes.isEmpty {
+						RecipeEmptyView {
 							Task {
 								await viewModel.fetchRecipes()
 							}
 						}
+					} else {
+						RecipeList(recipes: recipes)
+							.refreshable {
+								await viewModel.fetchRecipes(isRefresh: true)
+							}
 					}
-				} else {
-					List(viewModel.recipes, id: \.uuid) { recipe in
-						RecipeRow(recipe: recipe)
+				case .failed(let errorMessage):
+					RecipeLoadErrorView(errorMessage: errorMessage) {
+						Task {
+							await viewModel.fetchRecipes()
+						}
 					}
-					.navigationTitle("Recipes")
-					.refreshable {
-						await viewModel.fetchRecipes()
-					}
-					.task {
-						await viewModel.fetchRecipes()
-					}
+				}
+			}
+			.task {
+				if case .idle = viewModel.state {
+					await viewModel.fetchRecipes()
 				}
 			}
 		}

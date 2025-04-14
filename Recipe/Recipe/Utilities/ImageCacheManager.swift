@@ -12,7 +12,6 @@ final class ImageCacheManager {
 	private let memoryCache = NSCache<NSString, UIImage>()
 	private let cacheDirectory: URL
 	
-	// Set the disk cache directory upon initialization
 	private init() {
 		// Set cache directory (in the Caches folder)
 		cacheDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!.appendingPathComponent("DownloadedImages")
