@@ -11,7 +11,7 @@ import SwiftUI
 struct RecipeApp: App {
     var body: some Scene {
         WindowGroup {
-			RecipeHomeView(viewModel: .init(apiClient: APIClient()))
+			RecipeHomeView(viewModel: .init(recipeRepository: RecipeRepository(apiClient: APIClient())))
         }
     }
 }

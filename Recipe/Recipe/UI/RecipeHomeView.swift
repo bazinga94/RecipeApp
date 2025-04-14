@@ -20,31 +20,31 @@ struct RecipeHomeView: View {
 				if recipes.isEmpty {
 					RecipeEmptyView {
 						Task {
-							await viewModel.fetchRecipes()
+							await viewModel.loadRecipes()
 						}
 					}
 				} else {
 					RecipeListView(recipes: recipes)
 						.refreshable {
-							await viewModel.fetchRecipes(isRefresh: true)
+							await viewModel.loadRecipes(isRefresh: true)
 						}
 				}
 			case .failed(let errorMessage):
 				RecipeLoadErrorView(errorMessage: errorMessage) {
 					Task {
-						await viewModel.fetchRecipes()
+						await viewModel.loadRecipes()
 					}
 				}
 			}
 		}
 		.task {
 			if case .idle = viewModel.state {
-				await viewModel.fetchRecipes()
+				await viewModel.loadRecipes()
 			}
 		}
 	}
 }
 
 #Preview {
-	RecipeHomeView(viewModel: .init(apiClient: APIClient()))
+	RecipeHomeView(viewModel: .init(recipeRepository: RecipeRepository(apiClient: APIClient())))
 }

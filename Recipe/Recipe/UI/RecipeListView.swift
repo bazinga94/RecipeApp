@@ -45,7 +45,6 @@ struct RecipeListView: View {
 				List {
 					Section {
 						ForEach(sortedAndFilteredRecipes) { recipe in
-							//						RecipeRow(recipe: recipe)
 							NavigationLink(destination: RecipeDetailView(recipe: recipe)) {
 								RecipeRow(recipe: recipe)
 							}
