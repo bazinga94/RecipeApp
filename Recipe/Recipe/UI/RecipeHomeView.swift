@@ -9,7 +9,7 @@ import SwiftUI
 
 struct RecipeHomeView: View {
 	
-	@StateObject var viewModel: RecipesListViewModel
+	@ObservedObject var viewModel: RecipesListViewModel
 	
 	var body: some View {
 		NavigationView {
@@ -25,14 +25,12 @@ struct RecipeHomeView: View {
 						}
 					}
 				} else {
-					VStack {
-						List(viewModel.recipes, id: \.uuid) { recipe in
-							RecipeRow(recipe: recipe)
-						}
-						.navigationTitle("Recipes")
-						.refreshable {
-							await viewModel.fetchRecipes()
-						}
+					List(viewModel.recipes, id: \.uuid) { recipe in
+						RecipeRow(recipe: recipe)
+					}
+					.navigationTitle("Recipes")
+					.refreshable {
+						await viewModel.fetchRecipes()
 					}
 					.task {
 						await viewModel.fetchRecipes()

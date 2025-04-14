@@ -12,7 +12,11 @@ struct RecipeRow: View {
 	
 	var body: some View {
 		HStack(alignment: .top) {
-			VStack(alignment: .leading, spacing: 4) {
+			AsyncCachedImage(urlString: recipe.photoUrlSmall, id: recipe.uuid)
+				.frame(width: 80, height: 80)
+				.cornerRadius(20)
+			
+			VStack(alignment: .leading, spacing: 5) {
 				Text(recipe.name)
 					.font(.headline)
 				Text(recipe.cuisine)
@@ -20,7 +24,7 @@ struct RecipeRow: View {
 					.foregroundColor(.gray)
 			}
 		}
-		.padding(.vertical, 4)
+		.padding(.vertical, 5)
 	}
 }
 
