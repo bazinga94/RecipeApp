@@ -17,7 +17,11 @@ final class ImageMemoryCacheManager: ImageMemoryCachable {
 	
 	private let memoryCache = NSCache<NSString, UIImage>()
 	
-	private init() {}
+	private init() {
+		// Set cache capacity
+		memoryCache.countLimit = 200
+		memoryCache.totalCostLimit = 100_000_000		// 100MB
+	}
 
 	func imageFromMemoryCache(for key: String) -> UIImage? {
 		memoryCache.object(forKey: key as NSString)
