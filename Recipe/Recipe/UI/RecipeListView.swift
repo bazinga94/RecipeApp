@@ -8,33 +8,17 @@
 import SwiftUI
 
 struct RecipeListView: View {
-	enum SortOption: String, CaseIterable {
-		case name = "Name"
-		case cuisine = "Cuisine"
+	@StateObject private var viewModel: RecipeListViewModel
+	
+	init(recipes: [Recipe]) {
+		_viewModel = StateObject(wrappedValue: RecipeListViewModel(recipes: recipes))
 	}
 	
-	@State private var sortOption: SortOption = .name
-	@State var recipes: [Recipe]
-	@State var searchText: String = ""
-	
-	private var sortedAndFilteredRecipes: [Recipe] {
-		let filteredRecipes = recipes.filter { recipe in
-			return searchText.isEmpty || recipe.name.localizedCaseInsensitiveContains(searchText) || recipe.cuisine.localizedCaseInsensitiveContains(searchText)
-		}
-		
-		switch sortOption {
-		case .name:
-			return filteredRecipes.sorted { $0.name < $1.name }
-		case .cuisine:
-			return filteredRecipes.sorted { $0.cuisine < $1.cuisine }
-		}
-	}
-	
-    var body: some View {
+	var body: some View {
 		NavigationView {
 			VStack {
-				Picker("Sort by", selection: $sortOption) {
-					ForEach(SortOption.allCases, id: \.self) { option in
+				Picker("Sort by", selection: $viewModel.sortOption) {
+					ForEach(RecipeListViewModel.SortOption.allCases, id: \.self) { option in
 						Text(option.rawValue)
 					}
 				}
@@ -44,7 +28,7 @@ struct RecipeListView: View {
 				
 				List {
 					Section {
-						ForEach(sortedAndFilteredRecipes) { recipe in
+						ForEach(viewModel.sortedAndFilteredRecipes) { recipe in
 							NavigationLink(destination: RecipeDetailView(recipe: recipe)) {
 								RecipeRow(recipe: recipe)
 							}
@@ -54,7 +38,7 @@ struct RecipeListView: View {
 			}
 			.navigationTitle("Recipes")
 			.navigationBarTitleDisplayMode(.inline)
-			.searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always))
+			.searchable(text: $viewModel.searchText, placement: .navigationBarDrawer(displayMode: .always))
 		}
     }
 }
