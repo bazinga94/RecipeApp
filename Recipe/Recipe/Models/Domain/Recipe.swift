@@ -5,7 +5,7 @@
 //  Created by Jongho Lee on 4/13/25.
 //
 
-struct Recipe: Identifiable {
+struct Recipe: Identifiable, Equatable {
 	var id: String { uuid }
 	
 	let uuid: String

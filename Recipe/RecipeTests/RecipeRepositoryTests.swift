@@ -9,13 +9,18 @@ import XCTest
 @testable import Recipe
 
 final class RecipeRepositoryTests: XCTestCase {
+	
+	var sut: RecipeRepository!
+	var mockAPIClient: MockAPIClient!
 
     override func setUpWithError() throws {
-		
+		mockAPIClient = MockAPIClient()
+		sut = RecipeRepository(apiClient: mockAPIClient)
     }
 
     override func tearDownWithError() throws {
-
+		mockAPIClient = nil
+		sut = nil
     }
 	
 	/*
@@ -36,12 +41,10 @@ final class RecipeRepositoryTests: XCTestCase {
 			RecipeDTO(uuid: "", name: "Apple & Blackberry Crumble", cuisine: "British", photo_url_large: nil, photo_url_small: nil, source_url: nil, youtube_url: nil),
 			RecipeDTO(uuid: "", name: "Banana Pancakes", cuisine: "American", photo_url_large: nil, photo_url_small: nil, source_url: nil, youtube_url: nil)
 		])
-		let mockClient = MockAPIClient()
-		mockClient.result = .success(dto)
-		let repository = RecipeRepository(apiClient: mockClient)
+		mockAPIClient.result = .success(dto)
 		
 		// When
-		let recipes = try await repository.fetchRecipes()
+		let recipes = try await sut.fetchRecipes()
 		
 		// Then
 		XCTAssertEqual(recipes.count, 3)
@@ -54,13 +57,11 @@ final class RecipeRepositoryTests: XCTestCase {
 	func test_recipe_repository_success_empty() async {
 		// Given
 		let dto = RecipesResponseDTO(recipes: [])
-		let mockClient = MockAPIClient()
-		mockClient.result = .success(dto)
-		let repository = RecipeRepository(apiClient: mockClient)
+		mockAPIClient.result = .success(dto)
 		
 		// When & Then
 		do {
-			let recipes = try await repository.fetchRecipes()
+			let recipes = try await sut.fetchRecipes()
 			XCTAssertEqual(recipes.count, 0)
 		} catch {
 			XCTFail("Unexpected error")
@@ -69,13 +70,11 @@ final class RecipeRepositoryTests: XCTestCase {
 	
 	func test_recipe_repository_failure() async {
 		// Given
-		let mockClient = MockAPIClient()
-		mockClient.result = .failure(APIError.invalidUrl)
-		let repository = RecipeRepository(apiClient: mockClient)
+		mockAPIClient.result = .failure(APIError.invalidUrl)
 		
 		// When & Then
 		do {
-			let _ = try await repository.fetchRecipes()
+			let _ = try await sut.fetchRecipes()
 			XCTFail("Error not occured")
 		} catch {
 			guard let apiError = error as? APIError else {
