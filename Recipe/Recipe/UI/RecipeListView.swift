@@ -27,10 +27,21 @@ struct RecipeListView: View {
 				.padding(.horizontal, 40)
 				
 				List {
-					Section {
-						ForEach(viewModel.sortedAndFilteredRecipes) { recipe in
+					switch viewModel.sortOption {
+					case .name:
+						ForEach(viewModel.sortedRecipes) { recipe in
 							NavigationLink(destination: RecipeDetailView(recipe: recipe)) {
 								RecipeRow(recipe: recipe)
+							}
+						}
+					case .cuisine:
+						ForEach(viewModel.groupedRecipes.keys.sorted(), id: \.self) { cuisine in
+							Section(header: Text(cuisine).font(.title2).fontWeight(.bold)) {
+								ForEach(viewModel.groupedRecipes[cuisine] ?? []) { recipe in
+									NavigationLink(destination: RecipeDetailView(recipe: recipe)) {
+										RecipeRow(recipe: recipe)
+									}
+								}
 							}
 						}
 					}

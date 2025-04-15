@@ -17,17 +17,19 @@ class RecipeListViewModel: ObservableObject {
 	@Published var searchText: String = ""
 	@Published var sortOption: SortOption = .name
 	
-	var sortedAndFilteredRecipes: [Recipe] {
-		let filtered = recipes.filter { recipe in
+	var filteredRecipes: [Recipe] {
+		return recipes.filter { recipe in
 			searchText.isEmpty || recipe.name.localizedCaseInsensitiveContains(searchText) || recipe.cuisine.localizedCaseInsensitiveContains(searchText)
 		}
-		
-		switch sortOption {
-		case .name:
-			return filtered.sorted { $0.name < $1.name }
-		case .cuisine:
-			return filtered.sorted { $0.cuisine < $1.cuisine }
-		}
+	}
+	
+	var sortedRecipes: [Recipe] {
+		return filteredRecipes.sorted { $0.name < $1.name }
+	}
+	
+	var groupedRecipes: [String: [Recipe]] {
+		let sorted = filteredRecipes.sorted { $0.cuisine < $1.cuisine }
+		return Dictionary(grouping: sorted) { $0.cuisine }
 	}
 	
 	init(recipes: [Recipe]) {

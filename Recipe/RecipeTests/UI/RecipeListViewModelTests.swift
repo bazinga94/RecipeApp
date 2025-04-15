@@ -30,7 +30,7 @@ final class RecipeListViewModelTests: XCTestCase {
 		sut.sortOption = .name
 		
 		// Then
-		XCTAssertEqual(sut.sortedAndFilteredRecipes.map { $0.name }, ["Chocolate Gateau", "Seri Muka Kuih", "Walnut Roll Gužvara"])
+		XCTAssertEqual(sut.sortedRecipes.map { $0.name }, ["Chocolate Gateau", "Seri Muka Kuih", "Walnut Roll Gužvara"])
 	}
 
 	func test_sort_option_cuisine() {
@@ -38,7 +38,7 @@ final class RecipeListViewModelTests: XCTestCase {
 		sut.sortOption = .cuisine
 		
 		// Then
-		XCTAssertEqual(sut.sortedAndFilteredRecipes.map { $0.cuisine }, ["Croatian", "French", "Malaysian"])
+		XCTAssertEqual(sut.groupedRecipes["French"]?.first?.name, "Chocolate Gateau")
 	}
 	
 	func test_search_text_name() {
@@ -46,7 +46,7 @@ final class RecipeListViewModelTests: XCTestCase {
 		sut.searchText = "Roll"
 		
 		// Then
-		XCTAssertEqual(sut.sortedAndFilteredRecipes.map { $0.name }, ["Walnut Roll Gužvara"])
+		XCTAssertEqual(sut.filteredRecipes.map { $0.name }, ["Walnut Roll Gužvara"])
 	}
 	
 	func test_search_text_cuisine() {
@@ -54,7 +54,7 @@ final class RecipeListViewModelTests: XCTestCase {
 		sut.searchText = "Mal"
 		
 		// Then
-		XCTAssertEqual(sut.sortedAndFilteredRecipes.map { $0.cuisine }, ["Malaysian"])
+		XCTAssertEqual(sut.filteredRecipes.map { $0.cuisine }, ["Malaysian"])
 	}
 	
 	func test_search_text_capital() {
@@ -62,7 +62,7 @@ final class RecipeListViewModelTests: XCTestCase {
 		sut.searchText = "gaTeau"
 		
 		// Then
-		XCTAssertEqual(sut.sortedAndFilteredRecipes.map { $0.name }, ["Chocolate Gateau"])
+		XCTAssertEqual(sut.filteredRecipes.map { $0.name }, ["Chocolate Gateau"])
 	}
 	
 	func test_search_text_multiple_words() {
@@ -70,6 +70,6 @@ final class RecipeListViewModelTests: XCTestCase {
 		sut.searchText = "seri muka"
 		
 		// Then
-		XCTAssertEqual(sut.sortedAndFilteredRecipes.map { $0.name }, ["Seri Muka Kuih"])
+		XCTAssertEqual(sut.filteredRecipes.map { $0.name }, ["Seri Muka Kuih"])
 	}
 }
