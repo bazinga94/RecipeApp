@@ -1,5 +1,5 @@
 //
-//  ImageCacheManagerTests.swift
+//  ImageMemoryCacheManagerTests.swift
 //  RecipeTests
 //
 //  Created by Jongho Lee on 4/15/25.
@@ -8,14 +8,14 @@
 import XCTest
 @testable import Recipe
 
-class ImageCacheManagerTests: XCTestCase {
+class ImageMemoryCacheManagerTests: XCTestCase {
 	
-	var sut: ImageCacheManager!
+	var sut: ImageMemoryCacheManager!
 	let testKey = "test"
 	let testImage = UIImage(systemName: "photo")!
 
 	override func setUpWithError() throws {
-		sut = ImageCacheManager.shared
+		sut = ImageMemoryCacheManager.shared
 	}
 
 	override func tearDownWithError() throws {

@@ -16,10 +16,12 @@ class ImageLoader: ObservableObject, ImageCacheable {
 	@Published var image: UIImage?
 	@Published var fail: Bool = false
 	
-	private var cacheManager: ImageMemoryCachable & ImageDiskCachable
+	private var memoryCache: ImageMemoryCachable
+	private var diskCache: ImageDiskCachable
 	
-	init(cacheManager: ImageMemoryCachable & ImageDiskCachable = ImageCacheManager.shared) {
-		self.cacheManager = cacheManager
+	init(memoryCache: ImageMemoryCachable, diskCache: ImageDiskCachable) {
+		self.memoryCache = memoryCache
+		self.diskCache = diskCache
 	}
 
 	// Load UIImage from cache if available, otherwise fetch from URL and cache it
@@ -31,14 +33,14 @@ class ImageLoader: ObservableObject, ImageCacheable {
 			return
 		}
 		
-		if let memoryCachedImage = cacheManager.imageFromMemoryCache(for: cacheKey) {
+		if let memoryCachedImage = memoryCache.imageFromMemoryCache(for: cacheKey) {
 			self.image = memoryCachedImage
 			return
 		}
 		
-		if let diskCachedImage = cacheManager.imageFromDiskCache(for: cacheKey) {
-			cacheManager.saveImageToMemoryCache(diskCachedImage, for: cacheKey)
-			self.image = diskCachedImage
+		if let diskCachedData = diskCache.imageDataFromDiskCache(for: cacheKey), let cachedImage = UIImage(data: diskCachedData) {
+			memoryCache.saveImageToMemoryCache(cachedImage, for: cacheKey)
+			self.image = cachedImage
 			return
 		}
 		
@@ -50,8 +52,8 @@ class ImageLoader: ObservableObject, ImageCacheable {
 		do {
 			let (data, _) = try await URLSession.shared.data(from: url)
 			if let uiImage = UIImage(data: data) {
-				cacheManager.saveImageToMemoryCache(uiImage, for: cacheKey)
-				cacheManager.saveImageToDiskCache(uiImage, for: cacheKey)
+				memoryCache.saveImageToMemoryCache(uiImage, for: cacheKey)
+				diskCache.saveToDiskCache(data, for: cacheKey)
 				self.image = uiImage
 			} else {
 				self.fail = true
