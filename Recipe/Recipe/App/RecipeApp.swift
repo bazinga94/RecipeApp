@@ -9,9 +9,19 @@ import SwiftUI
 
 @main
 struct RecipeApp: App {
-    var body: some Scene {
-        WindowGroup {
+	// When the app starts
+	init () {
+		let imageCacheManager = ImageDiskCacheManager()
+		// Perform cache cleanup in a background thread
+		Task.detached {
+			imageCacheManager.cleanupOldCache(expirationDays: 7)
+		}
+		
+	}
+	
+	var body: some Scene {
+		WindowGroup {
 			RecipeHomeView(viewModel: .init(recipeRepository: RecipeRepository(apiClient: APIClient())))
-        }
-    }
+		}
+	}
 }

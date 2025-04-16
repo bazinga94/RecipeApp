@@ -17,7 +17,7 @@ struct RecipeDetailView: View {
 					.font(.title)
 					.fontWeight(.bold)
 				
-				AsyncCachedImage(urlString: recipe.photoUrlLarge, id: recipe.id + "_large")
+				AsyncCachedImage(urlString: recipe.photoUrlLarge, id: recipe.id + "_large.jpg")
 					.cornerRadius(5)
 
 				Text("Cuisine: \(recipe.cuisine)")

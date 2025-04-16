@@ -7,12 +7,12 @@
 
 import SwiftUI
 
-protocol ImageCacheable {
+protocol ImageLoadable {
 	func loadImage(from urlString: String?, cacheKey: String) async
 }
 
 @MainActor
-class ImageLoader: ObservableObject, ImageCacheable {
+class ImageLoader: ObservableObject, ImageLoadable {
 	@Published var image: UIImage?
 	@Published var fail: Bool = false
 	

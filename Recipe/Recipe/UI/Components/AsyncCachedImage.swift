@@ -8,7 +8,9 @@
 import SwiftUI
 
 struct AsyncCachedImage: View {
+	/// Image URL string
 	let urlString: String?
+	/// Image cache key
 	let id: String
 	
 	@StateObject private var imageLoader: ImageLoader
