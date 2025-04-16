@@ -24,7 +24,7 @@ protocol DiskCacheCleanable {
 
 struct CacheMetadata: Codable {
 	let key: String       // file name ("uuid_small.jpg")
-	let date: Date        // file creation date
+	var date: Date        // file creation date & last access date
 }
 
 class ImageDiskCacheManager: ImageDiskCachable, DiskCacheMetadataManagable, DiskCacheCleanable {
@@ -53,6 +53,17 @@ class ImageDiskCacheManager: ImageDiskCachable, DiskCacheMetadataManagable, Disk
 		guard let data = try? Data(contentsOf: fileURL) else {
 			return nil
 		}
+		
+		// Update saved image's metadata
+		var metadataList = loadMetadata() ?? []
+		
+		if let index = metadataList.firstIndex(where: { $0.key == key }) {
+			var metadata = metadataList[index]
+			metadata.date = Date() // Update to current date
+			metadataList[index] = metadata
+			saveMetadata(metadataList)
+		}
+		
 		return data
 	}
 	
@@ -61,7 +72,7 @@ class ImageDiskCacheManager: ImageDiskCachable, DiskCacheMetadataManagable, Disk
 		do {
 			try imageData.write(to: fileURL)
 			
-			// Update saved image's metadata
+			// Add saved image's metadata
 			let metadata = CacheMetadata(key: key, date: Date())
 			var metadataList = loadMetadata() ?? []
 			metadataList.append(metadata)
@@ -100,15 +111,13 @@ class ImageDiskCacheManager: ImageDiskCachable, DiskCacheMetadataManagable, Disk
 	
 	/// Delete cache files that are older than the specified number of days
 	func cleanupOldCache(expirationDays: Double) {
-		Task.detached {
-			let now = Date()
-			guard let metadataList = self.loadMetadata() else { return }
-			
-			for item in metadataList {
-				let cacheAge = now.timeIntervalSince(item.date)
-				if cacheAge > expirationDays * 86400 { // 1 day = 86400 seconds
-					self.deleteFile(for: item.key)
-				}
+		let now = Date()
+		guard let metadataList = self.loadMetadata() else { return }
+		
+		for item in metadataList {
+			let cacheAge = now.timeIntervalSince(item.date)
+			if cacheAge > expirationDays * 86400 { // 1 day = 86400 seconds
+				self.deleteFile(for: item.key)
 			}
 		}
 	}

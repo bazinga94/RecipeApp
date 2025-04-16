@@ -28,6 +28,12 @@ class ImageDiskCacheManagerTests: XCTestCase {
 			.appendingPathComponent("TEST")
 			.appendingPathComponent(testKey)
 		try? FileManager.default.removeItem(at: fileURL)
+		
+		// Clean up metadata
+		let metadataURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+			.appendingPathComponent("TEST")
+			.appendingPathComponent("cache_metadata.json")
+		try? FileManager.default.removeItem(at: metadataURL)
 	}
 	
 	func test_image_from_disk_cache() {
@@ -40,5 +46,71 @@ class ImageDiskCacheManagerTests: XCTestCase {
 		// Then
 		XCTAssertNotNil(cachedData)
 		XCTAssertEqual(cachedData, imageData)
+	}
+	
+	func test_save_metadata() {
+		// Given
+		sut.saveToDiskCache(imageData, for: testKey)
+		
+		// When
+		let metadata = sut.loadMetadata()
+		
+		// Then
+		XCTAssertNotNil(metadata)
+		XCTAssertEqual(metadata?.count, 1)
+		XCTAssertEqual(metadata?.first?.key, testKey)
+	}
+	
+	func test_update_metadata() {
+		// Given
+		sut.saveToDiskCache(imageData, for: testKey)
+		let oldMetadata = sut.loadMetadata()
+		let oldDate = oldMetadata?.first?.date
+		
+		// When
+		_ = sut.imageDataFromDiskCache(for: testKey)	// Update "date" metadata by accessing the cache
+		let currentMetadata = sut.loadMetadata()
+		
+		// Then
+		XCTAssertNotNil(currentMetadata)
+		XCTAssertEqual(currentMetadata?.count, 1)
+		XCTAssertEqual(currentMetadata?.first?.key, testKey)
+		XCTAssertNotEqual(currentMetadata?.first?.date, oldDate)
+	}
+	
+	func test_delete_file() {
+		// Given
+		sut.saveToDiskCache(imageData, for: testKey)
+		
+		// When
+		sut.deleteFile(for: testKey)
+		
+		// Then
+		let cachedData = sut.imageDataFromDiskCache(for: testKey)
+		XCTAssertNil(cachedData)
+		let metadata = sut.loadMetadata()
+		XCTAssertTrue(metadata?.isEmpty ?? true)
+	}
+	
+	func test_cleanup_old_cache() async {
+		// Given
+		sut.saveToDiskCache(imageData, for: testKey)
+		
+		// Simulate that the cache is older than 1 day
+		let oldDate = Calendar.current.date(byAdding: .day, value: -10, to: Date())!
+		let metadata = CacheMetadata(key: testKey, date: oldDate)
+		sut.saveMetadata([metadata])
+		let expectation = XCTestExpectation(description: "Cache should be deleted")
+		
+		// When
+		Task.detached {
+			self.sut.cleanupOldCache(expirationDays: 1)
+			expectation.fulfill()
+		}
+		
+		// Then
+		await fulfillment(of: [expectation], timeout: 2.0)
+		let cachedData = sut.imageDataFromDiskCache(for: testKey)
+		XCTAssertNil(cachedData)
 	}
 }
