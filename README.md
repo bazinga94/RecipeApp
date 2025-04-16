@@ -31,7 +31,7 @@ I focused on writing maintainable and testable code using a modern SwiftUI + Swi
 - Custom image caching implementation (without third-party libraries)
 - Dependency injection for maintainability and testability
 - High test coverage
-- Not bad UI and design
+- Not bad UI and design...
 
 ## Time Spent
 
@@ -45,7 +45,8 @@ Time was also spent researching SwiftUI, and design caching logic from scratch.
 
 ## Trade-offs and Decisions
 
-- **Caching**: Features like expiration (removing outdated files from disk) and download cancellation (handling duplicate requests or canceling ongoing downloads) were not included. These would be important to add for better stability and scalability in a more complex production app.
+- **Download Management**: Features like download cancellation (e.g., handling duplicate requests or canceling ongoing downloads) were not implemented. These would be important for improving stability and performance in a more complex app.
+- **LRU(LFU) Caching**: LRU(LFU) caching would be a good option for better cache management, but it was a bit too complicated for this project. Instead, I used the file creation date as metadata to manage cache expiration.
 - **Design system**: If there were a defined design system, I would have set up shared styles and components like fonts, colors, and common views. For this project,  I kept things simple and handled them inline.
 - **Error handling**: Just used `print` for error cases. In a production setting, I would log, handle, and categorize errors properly.
 - **Detail view**: Current version only shows Site and YouTube link. With more time, I could embed the video or show full recipe information for better usability.
@@ -58,7 +59,6 @@ Initially considered but not implemented
 
 - The image caching could be improved:
   - Memory cache is a singleton pattern. Simple but it may not be the optimal solution.
-  - No expiration policy for disk cache.
   - No cancellation or reuse of previous network requests.
 - Reusable color, font, and view components
 - Error handling could be more user-friendly.
@@ -66,6 +66,7 @@ Initially considered but not implemented
 
 ## Additional Information
 
-- Although not mentioned in the requirements, I implemented a custom memory caching to improve image performance.
+- Although not mentioned in the requirements, I implemented a custom **memory caching** to improve image performance.
+- In addition, I added a simple **expiration logic** for the disk cache to make sure outdated files don’t stay in the cache over time.
 - It was a valuable experience to build an image cache from scratch and verify its effectiveness using Xcode tools like Instruments and Debug Navigator.
-- This project helped me enhance best practices around testable architecture, SwiftUI design, and better performance.
+- I really enjoyed working. It was a fun challenge and a great opportunity to learn more about SwiftUI, Architecture, and Caching.
