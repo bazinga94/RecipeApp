@@ -4,14 +4,18 @@ Build a **Recipe** app using SwiftUI + Concurrency.
 ## Summary
 
 This iOS app displays a list of recipes with detailed information.  
-Recipes are grouped by category (cuisine) and sorted alphabetically, with a search feature for easy filtering.  
+Recipes are grouped by category (cuisine) and sorted alphabetically, with a search feature.  
 Users can refresh the list via pull-to-refresh, and images are cached in both memory and disk for improved performance.  
 
 ### Screenshots
 
-> Add here
+> <img src="https://github.com/user-attachments/assets/aa094716-b060-4cfa-88d2-26320d60fb90" width="300"/>
+> <img src="https://github.com/user-attachments/assets/554c2c9a-420f-4105-ad45-4f931a9df458" width="300"/>
+> <img src="https://github.com/user-attachments/assets/b5c36f5b-ff9d-4772-9286-ca7f88ff543f" width="300"/>
 
----
+> <img src="https://github.com/user-attachments/assets/e67e0c9d-17d8-42fe-b827-3141ff4dc5cc" width="300"/>
+> <img src="https://github.com/user-attachments/assets/82239ba6-66b0-4a35-950f-23ac55108c02" width="300"/>
+> <img src="https://github.com/user-attachments/assets/3b5058f7-125f-4154-a4f0-c706c7001915" width="300"/>
 
 ## Focus Areas
 
@@ -63,8 +67,6 @@ Initially considered but not implemented
 
 ## Additional Information
 
-Although not mentioned in the requirements, I implemented a custom memory caching to improve image performance.
-
-It was a valuable experience to build an image cache from scratch and verify its effectiveness using Xcode tools like Instruments and Debug Navigator.
-
-This project helped me enhance best practices around testable architecture, SwiftUI design, and better performance.
+- Although not mentioned in the requirements, I implemented a custom memory caching to improve image performance.
+- It was a valuable experience to build an image cache from scratch and verify its effectiveness using Xcode tools like Instruments and Debug Navigator.
+- This project helped me enhance best practices around testable architecture, SwiftUI design, and better performance.
