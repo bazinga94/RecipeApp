@@ -8,8 +8,8 @@
 import Foundation
 
 protocol ImageDiskCachable {
-	func imageDataFromDiskCache(for key: String) -> Data?
-	func saveToDiskCache(_ imageData: Data, for key: String)
+	func imageDataFromDiskCache(for key: String) async -> Data?
+	func saveToDiskCache(_ imageData: Data, for key: String) async
 }
 
 protocol DiskCacheMetadataManagable {
@@ -48,38 +48,50 @@ class ImageDiskCacheManager: ImageDiskCachable, DiskCacheMetadataManagable, Disk
 	
 	// MARK: - ImageDiskCachable
 
-	func imageDataFromDiskCache(for key: String) -> Data? {
-		let fileURL = cacheDirectory.appendingPathComponent(key)
-		guard let data = try? Data(contentsOf: fileURL) else {
-			return nil
+	func imageDataFromDiskCache(for key: String) async -> Data? {
+		return await withCheckedContinuation { continuation in
+			DispatchQueue.global(qos: .userInitiated).async {
+				let fileURL = self.cacheDirectory.appendingPathComponent(key)
+				guard let data = try? Data(contentsOf: fileURL) else {
+					continuation.resume(returning: nil)
+					return
+				}
+				
+				// Update saved image's metadata
+				var metadataList = self.loadMetadata() ?? []
+				
+				if let index = metadataList.firstIndex(where: { $0.key == key }) {
+					var metadata = metadataList[index]
+					metadata.date = Date() // Update to current date
+					metadataList[index] = metadata
+					self.saveMetadata(metadataList)
+				}
+				
+				continuation.resume(returning: data)
+			}
 		}
-		
-		// Update saved image's metadata
-		var metadataList = loadMetadata() ?? []
-		
-		if let index = metadataList.firstIndex(where: { $0.key == key }) {
-			var metadata = metadataList[index]
-			metadata.date = Date() // Update to current date
-			metadataList[index] = metadata
-			saveMetadata(metadataList)
-		}
-		
-		return data
 	}
 	
-	func saveToDiskCache(_ imageData: Data, for key: String) {
-		let fileURL = cacheDirectory.appendingPathComponent(key)
-		do {
-			try imageData.write(to: fileURL)
-			
-			// Add saved image's metadata
-			let metadata = CacheMetadata(key: key, date: Date())
-			var metadataList = loadMetadata() ?? []
-			metadataList.removeAll { $0.key == key }
-			metadataList.append(metadata)
-			saveMetadata(metadataList)
-		} catch {
-			print(error)
+	func saveToDiskCache(_ imageData: Data, for key: String) async {
+		await withCheckedContinuation { continuation in
+			DispatchQueue.global(qos: .background).async {
+				let fileURL = self.cacheDirectory.appendingPathComponent(key)
+				do {
+					try imageData.write(to: fileURL)
+					
+					// Add saved image's metadata
+					let metadata = CacheMetadata(key: key, date: Date())
+					var metadataList = self.loadMetadata() ?? []
+					metadataList.removeAll { $0.key == key }
+					metadataList.append(metadata)
+					self.saveMetadata(metadataList)
+					
+					continuation.resume()
+				} catch {
+					print(error)
+					continuation.resume()
+				}
+			}
 		}
 	}
 	

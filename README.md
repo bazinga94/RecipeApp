@@ -28,6 +28,7 @@ I focused on writing maintainable and testable code using a modern SwiftUI + Swi
 - Declarative UI design using SwiftUI
 - Clean separation of concerns using View - ViewModel - Repository - Data Source layers
 - Asynchronous programming with async/await
+- Efficient use of concurrency and threading
 - Custom image caching implementation (without third-party libraries)
 - Dependency injection for maintainability and testability
 - High test coverage
@@ -35,13 +36,13 @@ I focused on writing maintainable and testable code using a modern SwiftUI + Swi
 
 ## Time Spent
 
-I spent approximately 20 hours on the project during 4 days.
+I spent approximately 20 hours on the project during 5 days.
 
 - **UI**: 30%
 - **Networking, caching, business logic**: 50%
 - **Testing and refactoring**: 20%
 
-Time was also spent researching SwiftUI, and design caching logic from scratch.
+Time was also spent researching SwiftUI, Concurrency, and caching logic design.
 
 ## Trade-offs and Decisions
 

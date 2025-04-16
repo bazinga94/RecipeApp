@@ -36,21 +36,21 @@ class ImageDiskCacheManagerTests: XCTestCase {
 		try? FileManager.default.removeItem(at: metadataURL)
 	}
 	
-	func test_image_from_disk_cache() {
+	func test_image_from_disk_cache() async {
 		// Given
-		sut.saveToDiskCache(imageData, for: testKey)
+		await sut.saveToDiskCache(imageData, for: testKey)
 
 		// When
-		let cachedData = sut.imageDataFromDiskCache(for: testKey)
+		let cachedData = await sut.imageDataFromDiskCache(for: testKey)
 
 		// Then
 		XCTAssertNotNil(cachedData)
 		XCTAssertEqual(cachedData, imageData)
 	}
 	
-	func test_save_metadata() {
+	func test_save_metadata() async {
 		// Given
-		sut.saveToDiskCache(imageData, for: testKey)
+		await sut.saveToDiskCache(imageData, for: testKey)
 		
 		// When
 		let metadata = sut.loadMetadata()
@@ -61,14 +61,14 @@ class ImageDiskCacheManagerTests: XCTestCase {
 		XCTAssertEqual(metadata?.first?.key, testKey)
 	}
 	
-	func test_update_metadata() {
+	func test_update_metadata() async {
 		// Given
-		sut.saveToDiskCache(imageData, for: testKey)
+		await sut.saveToDiskCache(imageData, for: testKey)
 		let oldMetadata = sut.loadMetadata()
 		let oldDate = oldMetadata?.first?.date
 		
 		// When
-		_ = sut.imageDataFromDiskCache(for: testKey)	// Update "date" metadata by accessing the cache
+		_ = await sut.imageDataFromDiskCache(for: testKey)	// Update "date" metadata by accessing the cache
 		let currentMetadata = sut.loadMetadata()
 		
 		// Then
@@ -78,15 +78,15 @@ class ImageDiskCacheManagerTests: XCTestCase {
 		XCTAssertNotEqual(currentMetadata?.first?.date, oldDate)
 	}
 	
-	func test_delete_file() {
+	func test_delete_file() async {
 		// Given
-		sut.saveToDiskCache(imageData, for: testKey)
+		await sut.saveToDiskCache(imageData, for: testKey)
 		
 		// When
 		sut.deleteFile(for: testKey)
 		
 		// Then
-		let cachedData = sut.imageDataFromDiskCache(for: testKey)
+		let cachedData = await sut.imageDataFromDiskCache(for: testKey)
 		XCTAssertNil(cachedData)
 		let metadata = sut.loadMetadata()
 		XCTAssertTrue(metadata?.isEmpty ?? true)
@@ -94,7 +94,7 @@ class ImageDiskCacheManagerTests: XCTestCase {
 	
 	func test_cleanup_old_cache() async {
 		// Given
-		sut.saveToDiskCache(imageData, for: testKey)
+		await sut.saveToDiskCache(imageData, for: testKey)
 		
 		// Simulate that the cache is older than 1 day
 		let oldDate = Calendar.current.date(byAdding: .day, value: -10, to: Date())!
@@ -110,7 +110,7 @@ class ImageDiskCacheManagerTests: XCTestCase {
 		
 		// Then
 		await fulfillment(of: [expectation], timeout: 2.0)
-		let cachedData = sut.imageDataFromDiskCache(for: testKey)
+		let cachedData = await sut.imageDataFromDiskCache(for: testKey)
 		XCTAssertNil(cachedData)
 	}
 }

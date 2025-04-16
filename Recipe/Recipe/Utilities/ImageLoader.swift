@@ -38,7 +38,7 @@ class ImageLoader: ObservableObject, ImageLoadable {
 			return
 		}
 		
-		if let diskCachedData = diskCache.imageDataFromDiskCache(for: cacheKey), let cachedImage = UIImage(data: diskCachedData) {
+		if let diskCachedData = await diskCache.imageDataFromDiskCache(for: cacheKey), let cachedImage = UIImage(data: diskCachedData) {
 			memoryCache.saveImageToMemoryCache(cachedImage, for: cacheKey)
 			self.image = cachedImage
 			return
@@ -53,7 +53,7 @@ class ImageLoader: ObservableObject, ImageLoadable {
 			let (data, _) = try await URLSession.shared.data(from: url)
 			if let uiImage = UIImage(data: data) {
 				memoryCache.saveImageToMemoryCache(uiImage, for: cacheKey)
-				diskCache.saveToDiskCache(data, for: cacheKey)
+				await diskCache.saveToDiskCache(data, for: cacheKey)
 				self.image = uiImage
 			} else {
 				self.fail = true
