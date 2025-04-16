@@ -13,6 +13,9 @@ protocol RecipeRepositoryProtocol {
 
 class RecipeRepository: RecipeRepositoryProtocol {
 	
+	// All Recipes: https://d3jbb8n5wk0qxi.cloudfront.net/recipes.json
+	// Malformed Data: https://d3jbb8n5wk0qxi.cloudfront.net/recipes-malformed.json
+	// Empty Data: https://d3jbb8n5wk0qxi.cloudfront.net/recipes-empty.json
 	private enum URL {
 		static let all = "https://d3jbb8n5wk0qxi.cloudfront.net/recipes.json"
 		static let malformed = "https://d3jbb8n5wk0qxi.cloudfront.net/recipes-malformed.json"
@@ -25,10 +28,7 @@ class RecipeRepository: RecipeRepositoryProtocol {
 		self.apiClient = apiClient
 	}
 	
-	// All Recipes: https://d3jbb8n5wk0qxi.cloudfront.net/recipes.json
-	// Malformed Data: https://d3jbb8n5wk0qxi.cloudfront.net/recipes-malformed.json
-	// Empty Data: https://d3jbb8n5wk0qxi.cloudfront.net/recipes-empty.json
-	
+	/// Fetch recipe list from data source and map it to domain model
 	func fetchRecipes() async throws -> [Recipe] {
 		let dto = try await apiClient.fetch(
 			for: RecipesResponseDTO.self,

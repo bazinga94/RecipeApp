@@ -24,7 +24,7 @@ class ImageLoader: ObservableObject, ImageCacheable {
 		self.diskCache = diskCache
 	}
 
-	// Load UIImage from cache if available, otherwise fetch from URL and cache it
+	/// Load UIImage from cache if available, otherwise fetch from URL and cache it
 	func loadImage(from urlString: String?, cacheKey: String) async {
 		self.fail = false
 		

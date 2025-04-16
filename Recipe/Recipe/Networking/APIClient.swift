@@ -15,7 +15,7 @@ class APIClient: APIClientProtocol {
 	
 	init() { }
 	
-	// Fetch Decodable object from URL
+	/// Fetch Decodable object from URL
 	func fetch<T: Decodable>(for: T.Type, from urlString: String) async throws -> T {
 		
 		guard let url = URL(string: urlString) else {
