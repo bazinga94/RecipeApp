@@ -1,4 +1,5 @@
 # Recipe
+
 Build a **Recipe** app using SwiftUI + Concurrency.
 
 ## Summary
@@ -6,6 +7,10 @@ Build a **Recipe** app using SwiftUI + Concurrency.
 This iOS app displays a list of recipes with detailed information.  
 Recipes are grouped by category (cuisine) and sorted alphabetically, with a search feature.  
 Users can refresh the list via pull-to-refresh, and images are cached in both memory and disk for improved performance.  
+
+### Requirements
+
+- iOS 16.0+
 
 ### Screenshots
 
@@ -25,8 +30,7 @@ I focused on writing maintainable and testable code using a modern SwiftUI + Swi
 - Asynchronous programming with async/await
 - Custom image caching implementation (without third-party libraries)
 - Dependency injection for maintainability and testability
-
----
+- High test coverage
 
 ## Time Spent
 
@@ -38,19 +42,16 @@ I spent approximately 20 hours on the project during 4 days.
 
 Time was also spent researching SwiftUI, and design caching logic from scratch.
 
----
-
 ## Trade-offs and Decisions
 
-- **Error handling**: Just used `print` for error cases. In a production setting, I would log and categorize errors properly.
-- **Detail view**: Current version only shows Site and YouTube link. With more time, I could embed the video or show full recipe information.
 - **Caching**: Features like expiration (removing outdated files from disk) and download cancellation (handling duplicate requests or canceling ongoing downloads) were not included. These would be important to add for better stability and scalability in a more complex production app.
+- **Design system**: If there were a defined design system, I would have set up shared styles and components like fonts, colors, and common views. For this project,  I kept things simple and handled them inline.
+- **Error handling**: Just used `print` for error cases. In a production setting, I would log and categorize errors properly.
+- **Detail view**: Current version only shows Site and YouTube link. With more time, I could embed the video or show full recipe information for better usability.
 
 Initially considered but not implemented
 - **Pagination and prefetching**: Considered but not implemented due to the small dataset and endpoints don't support pagination.
 - **Search optimization**: Did not use debouncing (Combine) since we do not call api during search.
-
----
 
 ## Weakest Part of the Project
 
@@ -61,8 +62,6 @@ Initially considered but not implemented
 - Error handling could be more user-friendly.
 - Error could be logged.
 - The search feature could be enhanced (e.g., history).
-
----
 
 ## Additional Information
 

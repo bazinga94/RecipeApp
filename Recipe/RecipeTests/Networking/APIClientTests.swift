@@ -29,7 +29,7 @@ final class APIClientTests: XCTestCase {
 			let _ = try await sut.fetch(for: RecipesResponseDTO.self, from: invalidUrlString)
 			XCTFail("Error not occured")
 		} catch {
-			XCTAssertEqual(error as? APIError, APIError.invalidUrl)
+			XCTAssertEqual(error as? APIError, APIError.invalidURL)
 		}
 	}
 }

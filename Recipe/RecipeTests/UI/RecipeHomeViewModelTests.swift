@@ -47,7 +47,7 @@ final class RecipeHomeViewModelTests: XCTestCase {
 	
 	func test_loadRecipes_failure_failed() async {
 		// Given
-		mockRepository.result = .failure(APIError.invalidData)
+		mockRepository.result = .failure(APIError.decodingFailed)
 		
 		// When
 		await sut.loadRecipes()

@@ -70,7 +70,7 @@ final class RecipeRepositoryTests: XCTestCase {
 	
 	func test_recipe_repository_failure() async {
 		// Given
-		mockAPIClient.result = .failure(APIError.invalidUrl)
+		mockAPIClient.result = .failure(APIError.invalidURL)
 		
 		// When & Then
 		do {
@@ -81,7 +81,7 @@ final class RecipeRepositoryTests: XCTestCase {
 				XCTFail("Unexpected error type")
 				return
 			}
-			XCTAssertEqual(apiError, .invalidUrl)
+			XCTAssertEqual(apiError, .invalidURL)
 		}
 	}
 }
