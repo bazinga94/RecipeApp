@@ -12,7 +12,6 @@ Users can refresh the list via pull-to-refresh, and images are cached in both me
 > <img src="https://github.com/user-attachments/assets/aa094716-b060-4cfa-88d2-26320d60fb90" width="300"/>
 > <img src="https://github.com/user-attachments/assets/554c2c9a-420f-4105-ad45-4f931a9df458" width="300"/>
 > <img src="https://github.com/user-attachments/assets/b5c36f5b-ff9d-4772-9286-ca7f88ff543f" width="300"/>
-
 > <img src="https://github.com/user-attachments/assets/e67e0c9d-17d8-42fe-b827-3141ff4dc5cc" width="300"/>
 > <img src="https://github.com/user-attachments/assets/82239ba6-66b0-4a35-950f-23ac55108c02" width="300"/>
 > <img src="https://github.com/user-attachments/assets/3b5058f7-125f-4154-a4f0-c706c7001915" width="300"/>
