@@ -27,10 +27,15 @@ struct CacheMetadata: Codable {
 	var date: Date        // file creation date & last access date
 }
 
-class ImageDiskCacheManager: ImageDiskCachable, DiskCacheMetadataManagable, DiskCacheCleanable {
+final class ImageDiskCacheManager: ImageDiskCachable, DiskCacheMetadataManagable, DiskCacheCleanable {
+	static let shared = ImageDiskCacheManager()
+	
 	private let cacheDirectory: URL
 	private let metadataFileURL: URL
 	
+	private let metadataQueue = DispatchQueue(label: "com.jongko.Recipe.metadataqueue")
+	
+	// Keep initializer public for testing, should not use in production code
 	init(subdirectory: String = "DownloadedImages") {
 		let base = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
 		cacheDirectory = base.appendingPathComponent(subdirectory)
@@ -57,14 +62,16 @@ class ImageDiskCacheManager: ImageDiskCachable, DiskCacheMetadataManagable, Disk
 					return
 				}
 				
-				// Update saved image's metadata
-				var metadataList = self.loadMetadata() ?? []
-				
-				if let index = metadataList.firstIndex(where: { $0.key == key }) {
-					var metadata = metadataList[index]
-					metadata.date = Date() // Update to current date
-					metadataList[index] = metadata
-					self.saveMetadata(metadataList)
+				self.metadataQueue.sync {
+					// Update saved image's metadata
+					var metadataList = self.loadMetadata() ?? []
+					
+					if let index = metadataList.firstIndex(where: { $0.key == key }) {
+						var metadata = metadataList[index]
+						metadata.date = Date() // Update to current date
+						metadataList[index] = metadata
+						self.saveMetadata(metadataList)
+					}
 				}
 				
 				continuation.resume(returning: data)
@@ -79,12 +86,14 @@ class ImageDiskCacheManager: ImageDiskCachable, DiskCacheMetadataManagable, Disk
 				do {
 					try imageData.write(to: fileURL)
 					
-					// Add saved image's metadata
-					let metadata = CacheMetadata(key: key, date: Date())
-					var metadataList = self.loadMetadata() ?? []
-					metadataList.removeAll { $0.key == key }
-					metadataList.append(metadata)
-					self.saveMetadata(metadataList)
+					self.metadataQueue.sync {
+						// Add saved image's metadata
+						let metadata = CacheMetadata(key: key, date: Date())
+						var metadataList = self.loadMetadata() ?? []
+						metadataList.removeAll { $0.key == key }
+						metadataList.append(metadata)
+						self.saveMetadata(metadataList)
+					}
 					
 					continuation.resume()
 				} catch {

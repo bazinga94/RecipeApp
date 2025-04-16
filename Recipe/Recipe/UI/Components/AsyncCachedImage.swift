@@ -18,7 +18,7 @@ struct AsyncCachedImage: View {
 	init(urlString: String?, id: String) {
 		self.urlString = urlString
 		self.id = id
-		_imageLoader = StateObject(wrappedValue: ImageLoader(memoryCache: ImageMemoryCacheManager.shared, diskCache: ImageDiskCacheManager()))
+		_imageLoader = StateObject(wrappedValue: ImageLoader(memoryCache: ImageMemoryCacheManager.shared, diskCache: ImageDiskCacheManager.shared))
 	}
 	
 	var body: some View {
