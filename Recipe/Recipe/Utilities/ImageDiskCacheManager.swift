@@ -75,6 +75,7 @@ class ImageDiskCacheManager: ImageDiskCachable, DiskCacheMetadataManagable, Disk
 			// Add saved image's metadata
 			let metadata = CacheMetadata(key: key, date: Date())
 			var metadataList = loadMetadata() ?? []
+			metadataList.removeAll { $0.key == key }
 			metadataList.append(metadata)
 			saveMetadata(metadataList)
 		} catch {
