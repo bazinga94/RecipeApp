@@ -15,4 +15,12 @@ struct Recipe: Identifiable, Equatable {
 	let photoUrlSmall: String?
 	let sourceUrl: String?
 	let youtubeUrl: String?
+	
+	var smallImageId: String {
+		uuid + "_small.jpg"
+	}
+	
+	var largeImageId: String {
+		uuid + "_large.jpg"
+	}
 }

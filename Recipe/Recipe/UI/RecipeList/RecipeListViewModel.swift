@@ -17,6 +17,8 @@ class RecipeListViewModel: ObservableObject {
 	@Published var searchText: String = ""
 	@Published var sortOption: SortOption = .name
 	
+	private var prefetchedKeys: Set<String> = []
+	
 	var filteredRecipes: [Recipe] {
 		return recipes.filter { recipe in
 			searchText.isEmpty || recipe.name.localizedCaseInsensitiveContains(searchText) || recipe.cuisine.localizedCaseInsensitiveContains(searchText)
@@ -34,5 +36,28 @@ class RecipeListViewModel: ObservableObject {
 	
 	init(recipes: [Recipe]) {
 		self.recipes = recipes
+	}
+	
+	@MainActor
+	func prefetchIfNeeded(index: Int, count: Int = 5) async {
+		let upcoming = Array(recipes.dropFirst(index + 1).prefix(count))
+
+		let targets: [(String, String)] = upcoming.compactMap { recipe -> (String, String)? in
+			guard let url = recipe.photoUrlSmall else { return nil }
+			let key = recipe.smallImageId
+			return prefetchedKeys.contains(key) ? nil : (url, key)
+		}
+
+		guard !targets.isEmpty else { return }
+
+		for (_, key) in targets {
+			prefetchedKeys.insert(key)
+		}
+
+		let urls = targets.map { $0.0 }
+		let keys = targets.map { $0.1 }
+
+		let imagePrefetcher = ImagePrefetcher(diskCache: ImageDiskCacheManager.shared)
+		await imagePrefetcher.prefetch(urls: urls, keys: keys)
 	}
 }

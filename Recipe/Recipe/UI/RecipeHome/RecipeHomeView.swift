@@ -9,7 +9,11 @@ import SwiftUI
 
 struct RecipeHomeView: View {
 	
-	@ObservedObject var viewModel: RecipesListViewModel
+	@StateObject var viewModel: RecipesListViewModel
+	
+	init(viewModel: RecipesListViewModel) {
+		self._viewModel = StateObject(wrappedValue: viewModel)
+	}
 	
 	var body: some View {
 		Group {
@@ -24,10 +28,15 @@ struct RecipeHomeView: View {
 						}
 					}
 				} else {
-					RecipeListView(recipes: recipes)
-						.refreshable {
-							await viewModel.loadRecipes(isRefresh: true)
+					let subViewModel = RecipeListViewModel(recipes: recipes)
+					RecipeListView(viewModel: subViewModel, onScrollToBottom: {
+						Task {
+							await viewModel.loadNextPage()
 						}
+					})
+					.refreshable {
+						await viewModel.loadRecipes(isRefresh: true)
+					}
 				}
 			case .failed(let errorMessage):
 				RecipeLoadErrorView(errorMessage: errorMessage) {

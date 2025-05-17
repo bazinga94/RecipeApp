@@ -41,6 +41,9 @@ struct AsyncCachedImage: View {
 				await imageLoader.loadImage(from: urlString, cacheKey: id)
 			}
 		}
+		.onDisappear {
+			imageLoader.cancel()
+		}
 	}
 }
 

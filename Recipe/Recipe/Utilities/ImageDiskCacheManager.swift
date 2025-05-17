@@ -2,24 +2,19 @@
 //  ImageDiskCacheManager.swift
 //  Recipe
 //
-//  Created by Jongho Lee on 4/15/25.
+//  Created by Jongho Lee on 5/16/25.
 //
 
 import Foundation
+import CryptoKit
 
 protocol ImageDiskCachable {
-	func imageDataFromDiskCache(for key: String) async -> Data?
-	func saveToDiskCache(_ imageData: Data, for key: String) async
-}
-
-protocol DiskCacheMetadataManagable {
-	func loadMetadata() -> [CacheMetadata]?
-	func saveMetadata(_ metadata: [CacheMetadata])
+	func loadImageData(for key: String) async throws -> Data?
+	func saveData(_ imageData: Data, for key: String) async throws
 }
 
 protocol DiskCacheCleanable {
-	func deleteFile(for key: String)
-	func cleanupOldCache(expirationDays: Double)
+	func cleanupOldCache(expirationDays: Double) async throws
 }
 
 struct CacheMetadata: Codable {
@@ -27,19 +22,19 @@ struct CacheMetadata: Codable {
 	var date: Date        // file creation date & last access date
 }
 
-final class ImageDiskCacheManager: ImageDiskCachable, DiskCacheMetadataManagable, DiskCacheCleanable {
+final class ImageDiskCacheManager: ImageDiskCachable, DiskCacheCleanable {
+	
 	static let shared = ImageDiskCacheManager()
 	
 	private let cacheDirectory: URL
-	private let metadataFileURL: URL
-	
-	private let metadataQueue = DispatchQueue(label: "com.jongko.Recipe.metadataqueue")
+	private let metadata: DiskMetadataStore
 	
 	// Keep initializer public for testing, should not use in production code
-	init(subdirectory: String = "DownloadedImages") {
+	private init(subdirectory: String = "DownloadedImages") {
 		let base = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
-		cacheDirectory = base.appendingPathComponent(subdirectory)
-		metadataFileURL = cacheDirectory.appendingPathComponent("cache_metadata.json")
+		self.cacheDirectory = base.appendingPathComponent(subdirectory)
+		let metadataFileURL = cacheDirectory.appendingPathComponent("cache_metadata.json")
+		self.metadata = DiskMetadataStore(metadataFileURL: metadataFileURL)
 		
 		// Create cache directory
 		if !FileManager.default.fileExists(atPath: cacheDirectory.path) {
@@ -53,94 +48,44 @@ final class ImageDiskCacheManager: ImageDiskCachable, DiskCacheMetadataManagable
 	
 	// MARK: - ImageDiskCachable
 
-	func imageDataFromDiskCache(for key: String) async -> Data? {
-		return await withCheckedContinuation { continuation in
-			DispatchQueue.global(qos: .userInitiated).async {
-				let fileURL = self.cacheDirectory.appendingPathComponent(key)
-				guard let data = try? Data(contentsOf: fileURL) else {
-					continuation.resume(returning: nil)
-					return
-				}
-				
-				self.metadataQueue.sync {
-					// Update saved image's metadata
-					var metadataList = self.loadMetadata() ?? []
-					
-					if let index = metadataList.firstIndex(where: { $0.key == key }) {
-						var metadata = metadataList[index]
-						metadata.date = Date() // Update to current date
-						metadataList[index] = metadata
-						self.saveMetadata(metadataList)
-					}
-				}
-				
-				continuation.resume(returning: data)
-			}
-		}
+	func loadImageData(for key: String) async throws -> Data? {
+		let fileURL = self.cacheDirectory.appendingPathComponent(key)
+		guard DiskManager.fileExists(at: fileURL) else { return nil }
+		
+		let data = try await DiskManager.read(from: fileURL)
+		await metadata.updateAccessData(key: key)
+		return data
 	}
 	
-	func saveToDiskCache(_ imageData: Data, for key: String) async {
-		await withCheckedContinuation { continuation in
-			DispatchQueue.global(qos: .background).async {
-				let fileURL = self.cacheDirectory.appendingPathComponent(key)
-				do {
-					try imageData.write(to: fileURL)
-					
-					self.metadataQueue.sync {
-						// Add saved image's metadata
-						let metadata = CacheMetadata(key: key, date: Date())
-						var metadataList = self.loadMetadata() ?? []
-						metadataList.removeAll { $0.key == key }
-						metadataList.append(metadata)
-						self.saveMetadata(metadataList)
-					}
-					
-					continuation.resume()
-				} catch {
-					print(error)
-					continuation.resume()
-				}
-			}
-		}
-	}
-	
-	// MARK: - DiskCacheMetadataManagable
-	
-	func loadMetadata() -> [CacheMetadata]? {
-		guard let data = try? Data(contentsOf: metadataFileURL) else { return nil }
-		let decoder = JSONDecoder()
-		return try? decoder.decode([CacheMetadata].self, from: data)
-	}
-	
-	func saveMetadata(_ metadata: [CacheMetadata]) {
-		let encoder = JSONEncoder()
-		guard let data = try? encoder.encode(metadata) else { return }
-		try? data.write(to: metadataFileURL)
+	func saveData(_ imageData: Data, for key: String) async throws {
+		let fileURL = self.cacheDirectory.appendingPathComponent(key)
+		try imageData.write(to: fileURL)
+		await metadata.add(item: CacheMetadata(key: key, date: Date()))
 	}
 	
 	// MARK: - DiskCacheCleanable
 	
-	func deleteFile(for key: String) {
-		// Remove cache by key
-		let fileURL = cacheDirectory.appendingPathComponent(key)
-		try? FileManager.default.removeItem(at: fileURL)
+	/// Delete cache files that are older than the specified number of days
+	func cleanupOldCache(expirationDays: Double) async throws {
+		let deleteKeys = await metadata.expiredKeys(expirationDays: expirationDays)
 		
-		// Remove from metadata
-		var metadataList = loadMetadata() ?? []
-		metadataList.removeAll { $0.key == key }
-		saveMetadata(metadataList)
+		for key in deleteKeys {
+			try await self.deleteImage(for: key)
+		}
 	}
 	
-	/// Delete cache files that are older than the specified number of days
-	func cleanupOldCache(expirationDays: Double) {
-		let now = Date()
-		guard let metadataList = self.loadMetadata() else { return }
+	private func deleteImage(for key: String) async throws {
+		// Remove cache by key
+		let fileURL = cacheDirectory.appendingPathComponent(key)
+		guard DiskManager.fileExists(at: fileURL) else { return }
+		try await DiskManager.delete(at: fileURL)
 		
-		for item in metadataList {
-			let cacheAge = now.timeIntervalSince(item.date)
-			if cacheAge > expirationDays * 86400 { // 1 day = 86400 seconds
-				self.deleteFile(for: item.key)
-			}
-		}
+		// Remove from metadata
+		await metadata.delete(key: key)
+	}
+	
+	private func hashKey(_ key: String) -> String {
+		let hash = SHA256.hash(data: Data(key.utf8))
+		return hash.map { String(format: "%02x", $0) }.joined()
 	}
 }

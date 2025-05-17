@@ -8,10 +8,12 @@
 import SwiftUI
 
 struct RecipeListView: View {
-	@StateObject private var viewModel: RecipeListViewModel
+	@ObservedObject private var viewModel: RecipeListViewModel
+	let onScrollToBottom: () -> Void
 	
-	init(recipes: [Recipe]) {
-		_viewModel = StateObject(wrappedValue: RecipeListViewModel(recipes: recipes))
+	init(viewModel: RecipeListViewModel, onScrollToBottom: @escaping () -> Void) {
+		self.viewModel = viewModel
+		self.onScrollToBottom = onScrollToBottom
 	}
 	
 	var body: some View {
@@ -32,8 +34,23 @@ struct RecipeListView: View {
 						ForEach(viewModel.sortedRecipes) { recipe in
 							NavigationLink(destination: RecipeDetailView(recipe: recipe)) {
 								RecipeRow(recipe: recipe)
+									.onAppear {
+										if recipe == viewModel.recipes.last {
+											onScrollToBottom()
+										}
+									}
 							}
 						}
+//						ForEach(Array(viewModel.sortedRecipes.enumerated()), id: \.element.id) { index, recipe in
+//							NavigationLink(destination: RecipeDetailView(recipe: recipe)) {
+//								RecipeRow(recipe: recipe)
+//									.onAppear {
+//										Task {
+//											await viewModel.prefetchIfNeeded(index: index)
+//										}
+//									}
+//							}
+//						}
 					case .cuisine:
 						ForEach(viewModel.groupedRecipes.keys.sorted(), id: \.self) { cuisine in
 							Section(header: Text(cuisine).font(.title2).fontWeight(.bold)) {
@@ -55,5 +72,5 @@ struct RecipeListView: View {
 }
 
 #Preview {
-	RecipeListView(recipes: [.init(uuid: "", name: "TEST", cuisine: "Korean", photoUrlLarge: nil, photoUrlSmall: nil, sourceUrl: nil, youtubeUrl: nil)])
+	RecipeListView(viewModel: RecipeListViewModel(recipes: [.init(uuid: "", name: "TEST", cuisine: "Korean", photoUrlLarge: nil, photoUrlSmall: nil, sourceUrl: nil, youtubeUrl: nil)]), onScrollToBottom: {})
 }

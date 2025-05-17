@@ -9,6 +9,7 @@ import Foundation
 
 protocol RecipeRepositoryProtocol {
 	func fetchRecipes() async throws -> [Recipe]
+	func fetchRecipes(page: Int) async throws -> [Recipe]
 }
 
 class RecipeRepository: RecipeRepositoryProtocol {
@@ -35,5 +36,10 @@ class RecipeRepository: RecipeRepositoryProtocol {
 			from: URL.all
 		)
 		return RecipeMapper.mapList(dto.recipes)
+	}
+	
+	func fetchRecipes(page: Int) async throws -> [Recipe] {
+		// TODO
+		return []
 	}
 }

@@ -21,6 +21,13 @@ final class ImageMemoryCacheManager: ImageMemoryCachable {
 		// Set cache capacity
 		memoryCache.countLimit = 200
 		memoryCache.totalCostLimit = 100_000_000		// 100MB
+		
+		NotificationCenter.default.addObserver(
+			self,
+			selector: #selector(clearCache),
+			name: UIApplication.didReceiveMemoryWarningNotification,
+			object: nil
+		)
 	}
 
 	func imageFromMemoryCache(for key: String) -> UIImage? {
@@ -29,5 +36,10 @@ final class ImageMemoryCacheManager: ImageMemoryCachable {
 	
 	func saveImageToMemoryCache(_ image: UIImage, for key: String) {
 		memoryCache.setObject(image, forKey: key as NSString)
+	}
+	
+	@objc
+	private func clearCache() {
+		memoryCache.removeAllObjects()
 	}
 }

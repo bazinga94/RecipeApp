@@ -11,6 +11,10 @@ class RecipesListViewModel: ObservableObject {
 
 	@Published private(set) var state = State.idle
 	
+	// Pagination
+	private var currentPage = 1
+	@Published private(set) var isLoadingPage = false
+	
 	private let recipeRepository: RecipeRepositoryProtocol
 	
 	enum State: Equatable {
@@ -52,5 +56,27 @@ class RecipesListViewModel: ObservableObject {
 			print(error)
 			state = .failed("Something went wrong. \nPlease try again later.")
 		}
+	}
+	
+	@MainActor
+	func loadNextPage() async {
+		guard !isLoadingPage else { return }
+		isLoadingPage = true
+
+		do {
+			let newRecipes = try await recipeRepository.fetchRecipes(page: currentPage)
+			if !newRecipes.isEmpty {
+				currentPage += 1
+				if case .loaded(let existing) = state {
+					state = .loaded(existing + newRecipes)
+				} else {
+					state = .loaded(newRecipes)
+				}
+			}
+		} catch {
+			state = .failed("Failed to load more recipes")
+		}
+
+		isLoadingPage = false
 	}
 }

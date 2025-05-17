@@ -11,10 +11,9 @@ import SwiftUI
 struct RecipeApp: App {
 	// When the app starts
 	init () {
-		let imageCacheManager = ImageDiskCacheManager.shared
 		// Perform cache cleanup in a background thread
 		Task.detached {
-			imageCacheManager.cleanupOldCache(expirationDays: 7)
+			try? await ImageDiskCacheManager.shared.cleanupOldCache(expirationDays: 7)
 		}
 		
 	}
