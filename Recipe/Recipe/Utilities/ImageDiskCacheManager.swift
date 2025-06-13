@@ -8,7 +8,7 @@
 import Foundation
 import CryptoKit
 
-protocol ImageDiskCachable {
+protocol ImageDiskCachable: Sendable {
 	func loadImageData(for key: String) async throws -> Data?
 	func saveData(_ imageData: Data, for key: String) async throws
 }
@@ -22,7 +22,7 @@ struct CacheMetadata: Codable {
 	var date: Date        // file creation date & last access date
 }
 
-final class ImageDiskCacheManager: ImageDiskCachable, DiskCacheCleanable {
+actor ImageDiskCacheManager: ImageDiskCachable, DiskCacheCleanable {
 	
 	static let shared = ImageDiskCacheManager()
 	

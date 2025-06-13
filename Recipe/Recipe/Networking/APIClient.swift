@@ -7,13 +7,23 @@
 
 import Foundation
 
-protocol APIClientProtocol {
+protocol URLSessionProtocol: Sendable {
+	func data(from url: URL) async throws -> (Data, URLResponse)
+}
+
+extension URLSession: URLSessionProtocol { }
+
+protocol APIClientProtocol: Sendable {
 	func fetch<T: Decodable>(for: T.Type, from urlString: String) async throws -> T
 }
 
-class APIClient: APIClientProtocol {
+final class APIClient: APIClientProtocol {
 	
-	init() { }
+	let session: URLSessionProtocol
+	
+	init(session: URLSessionProtocol = URLSession.shared) {
+		self.session = session
+	}
 	
 	/// Fetch Decodable object from URL
 	func fetch<T: Decodable>(for: T.Type, from urlString: String) async throws -> T {
@@ -22,7 +32,7 @@ class APIClient: APIClientProtocol {
 			throw APIError.invalidURL
 		}
 		
-		let (data, urlResponse) = try await URLSession.shared.data(from: url)
+		let (data, urlResponse) = try await session.data(from: url)
 		
 		guard let httpUrlResponse = urlResponse as? HTTPURLResponse, httpUrlResponse.statusCode == 200 else {
 			throw APIError.badResponse

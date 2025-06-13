@@ -9,9 +9,9 @@ enum TimeoutError: Error {
 	case timedOut
 }
 
-func withTimeout<T>(
+func withTimeout<T: Sendable>(
 	seconds: Double,
-	operation: @escaping () async throws -> T
+	operation: @Sendable @escaping () async throws -> T
 ) async throws -> T {
 	try await withThrowingTaskGroup(of: T.self) { group in
 		// 1. Execute task

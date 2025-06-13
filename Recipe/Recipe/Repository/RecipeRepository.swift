@@ -7,12 +7,12 @@
 
 import Foundation
 
-protocol RecipeRepositoryProtocol {
+protocol RecipeRepositoryProtocol: Sendable {
 	func fetchRecipes() async throws -> [Recipe]
 	func fetchRecipes(page: Int) async throws -> [Recipe]
 }
 
-class RecipeRepository: RecipeRepositoryProtocol {
+final class RecipeRepository: RecipeRepositoryProtocol {
 	
 	// All Recipes: https://d3jbb8n5wk0qxi.cloudfront.net/recipes.json
 	// Malformed Data: https://d3jbb8n5wk0qxi.cloudfront.net/recipes-malformed.json

@@ -7,12 +7,13 @@
 
 import UIKit
 
-protocol ImageMemoryCachable {
-	func imageFromMemoryCache(for key: String) -> UIImage?
-	func saveImageToMemoryCache(_ image: UIImage, for key: String)
+protocol ImageMemoryCachable: Sendable {
+	func imageFromMemoryCache(for key: String) async -> UIImage?
+	func saveImageToMemoryCache(_ image: UIImage, for key: String) async
+	func clearCache() async
 }
 
-final class ImageMemoryCacheManager: ImageMemoryCachable {
+actor ImageMemoryCacheManager: ImageMemoryCachable {
 	static let shared = ImageMemoryCacheManager()
 	
 	private let memoryCache = NSCache<NSString, UIImage>()
@@ -21,13 +22,6 @@ final class ImageMemoryCacheManager: ImageMemoryCachable {
 		// Set cache capacity
 		memoryCache.countLimit = 200
 		memoryCache.totalCostLimit = 100_000_000		// 100MB
-		
-		NotificationCenter.default.addObserver(
-			self,
-			selector: #selector(clearCache),
-			name: UIApplication.didReceiveMemoryWarningNotification,
-			object: nil
-		)
 	}
 
 	func imageFromMemoryCache(for key: String) -> UIImage? {
@@ -38,8 +32,7 @@ final class ImageMemoryCacheManager: ImageMemoryCachable {
 		memoryCache.setObject(image, forKey: key as NSString)
 	}
 	
-	@objc
-	private func clearCache() {
+	func clearCache() {
 		memoryCache.removeAllObjects()
 	}
 }

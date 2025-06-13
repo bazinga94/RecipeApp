@@ -16,6 +16,14 @@ struct RecipeApp: App {
 			try? await ImageDiskCacheManager.shared.cleanupOldCache(expirationDays: 7)
 		}
 		
+		Task.detached {
+			let notificationCenter = NotificationCenter.default
+			for await _ in notificationCenter.notifications(
+				named: UIApplication.didReceiveMemoryWarningNotification
+			) {
+				await ImageMemoryCacheManager.shared.clearCache()
+			}
+		}
 	}
 	
 	var body: some Scene {
